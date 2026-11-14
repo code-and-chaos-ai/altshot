@@ -35,8 +35,9 @@ export const register: Register = on => {
 
   on('prompt.submit', async ($, e, next) => {
     const r = await next(e)
-    if (e.wait && !e.isMeta) {
-      const session = await $.session.id()
+    // your own typing (your Enter, or your phone through Remote Control). Not `e.wait`: since Claude Code 2.1.32x it
+    // only flags a prompt queued to wait its turn
+    if (!e.isMeta && (e.origin.kind === 'composer' || e.origin.kind === 'bridge')) {      const session = await $.session.id()
       await $.fs.write(`${ALTSHOT_STATE}\\last.json`, JSON.stringify({ session, at: await $.clock.now() })).catch(() => undefined)
     }
     return r
