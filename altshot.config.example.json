@@ -1,0 +1,12 @@
+{
+  "state_dir": "state",
+  "keep_shots": 200,
+  "redact": true,
+  "ocr_language": "en-US",
+  "ocr_scales": [1, 2],
+  "ocr_timeout_s": 4.0,
+  "clipboard": true,
+  "clipboard_timeout_s": 6.0,
+  "screenshots_dir": "",
+  "handoff": true
+}
