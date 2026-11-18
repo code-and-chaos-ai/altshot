@@ -462,12 +462,23 @@ def big_unread_hits(gray: np.ndarray, word_boxes: list[Box], known: list[Hit]) -
             if (y1 - y0) * f < BIG_MIN_H:   # small text shrunk: its words run together and whole lines would hit
                 continue
             box = (max(0, x0 * f - f), max(0, y0 * f - f), min(W, x1 * f + f), min(H, y1 * f + f))
-            twin = next((o for o in known + out if _overlap(o.box, box)
-                         and min(o.box[3], box[3]) - max(o.box[1], box[1]) >= 0.5 * min(o.box[3] - o.box[1], box[3] - box[1])), None)
+            def same_row(o: Hit) -> bool:
+                return _overlap(o.box, box) and (min(o.box[3], box[3]) - max(o.box[1], box[1])
+                                                 >= 0.5 * min(o.box[3] - o.box[1], box[3] - box[1]))
+            # Found already (by a pattern or by the 1x net): no second hit, so one secret stays one in the count.
+            # But if that hit covers only a PART of this string (a label and the start of a key), it is widened
+            # to cover all of it: sideways only, never taller.
+            cover = next((o for o in known if same_row(o)), None)
+            if cover is not None:
+                if cover.box[0] > box[0] + f or cover.box[2] < box[2] - f:
+                    cover.box = (min(cover.box[0], box[0]), cover.box[1], max(cover.box[2], box[2]), cover.box[3])
+                continue
+            twin = next((o for o in out if same_row(o)), None)
             if twin is None:
                 out.append(Hit("unreadable_long_string", box, box[3] - box[1], "unread"))
-            elif twin in out:   # the same string seen at two sizes: one hit, the wider of the two
-                twin.box = _union([twin.box, box])
+            else:   # the same string seen at two sizes: one hit, as wide as both, never taller than the taller one
+                tall = twin.box if twin.box[3] - twin.box[1] >= box[3] - box[1] else box
+                twin.box = (min(twin.box[0], box[0]), tall[1], max(twin.box[2], box[2]), tall[3])
                 twin.line_h = twin.box[3] - twin.box[1]
     return out
 
