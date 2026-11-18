@@ -161,6 +161,8 @@ objects) can't be saved this way; the image and text formats can.
 
 **18 November 2026.** A secret shown in large text (about 26 px letters and up, for example a zoomed terminal or a slide) could be saved without being blacked out, about one time in seven in our tests. Fixed in the commit that adds this note. If you took screenshots of secrets in large text with an earlier copy, treat those secrets as exposed and rotate them. Known limits that remain: a random string of 24 to 32 characters with no label next to it, and the last line of a key that wraps over several lines in large text, can still be missed.
 
+**Same day, a follow-up.** A partly covered string in large text could keep a few pixel rows visible: fixed in this commit. Two lines of large text set close together can be judged as one line, and a secret on one of them shown when the other line is readable: this commit catches the clear cases, not all of them (in our tests the key stayed visible in 1 of 1,440 such cards, before and after).
+
 ## License
 
 Apache License 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE). Copyright 2026 Code & Chaos.
